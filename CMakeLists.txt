@@ -4,7 +4,7 @@ project(CourseWork VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick)
+find_package(Qt6 REQUIRED COMPONENTS Quick Sql)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -17,6 +17,10 @@ qt_add_qml_module(appCourseWork
     VERSION 1.0
     QML_FILES
         Main.qml
+        SOURCES dbManager.h
+        SOURCES dbManager.cpp
+        SOURCES dbSync.h dbSync.cpp
+        SOURCES passwordHashing.h
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -32,6 +36,7 @@ set_target_properties(appCourseWork PROPERTIES
 
 target_link_libraries(appCourseWork
     PRIVATE Qt6::Quick
+    PRIVATE Qt6::Sql
 )
 
 include(GNUInstallDirs)
