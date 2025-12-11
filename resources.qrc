@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>TaskCreateDlg.qml</file>
+    </qresource>
+</RCC>

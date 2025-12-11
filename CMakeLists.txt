@@ -20,9 +20,18 @@ qt_add_qml_module(appCourseWork
         SOURCES dbManager.h
         SOURCES dbManager.cpp
         SOURCES dbSync.h dbSync.cpp
-        SOURCES passwordHashing.h
+        SOURCES AuthorizationController.h
+        QML_FILES TaskCard.qml
+        QML_FILES TaskCreateDlg.qml
+        RESOURCES resources.qrc
+        SOURCES AuthorizationController.cpp
+        SOURCES authorizationController.h authorizationController.cpp
 )
 
+qt_add_resources(appCourseWork "dlgWindows"
+    PREFIX "/"
+    FILES TaskCreateDlg.qml
+)
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.
