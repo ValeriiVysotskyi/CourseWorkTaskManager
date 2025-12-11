@@ -8,30 +8,40 @@
 #include <QUuid>
 #include <QSqlRecord>
 #include <QDateTime>
+#include <QObject>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QVariant>
 
-class DbManager {
+class DbManager:public QObject {
+    Q_OBJECT
+
 public:
-    DbManager();
+    explicit DbManager(QObject *parent = nullptr);
     ~DbManager();
 
+    Q_INVOKABLE void addTask(const QMap<QString, QVariant> &taskInfo);
+    Q_INVOKABLE void redactTask(const QJsonObject &taskInfo);
+    Q_INVOKABLE void deleteTask(const QString &uuid);
 
-    void addUser(const QMap<QString, QVariant> &userInfo);
+    Q_INVOKABLE QMap<QString, QVariant> getAuthorizationInfo(const QString &username);
+    Q_INVOKABLE int getDepartmentNumber(const QString &departmentName);
+    Q_INVOKABLE void completeTask(const QString &uuid);
+    Q_INVOKABLE QJsonObject getTaskInfo(const QString &uuid);
+    Q_INVOKABLE QJsonArray getAllTasksList(const int &page);
+    Q_INVOKABLE QJsonArray getUserTasksList(const QString &username, const int &page);
+    Q_INVOKABLE QJsonArray getDepartmentTasksList(const int &departmentId, const int &page);
 
-    void addTask(const QMap<QString, QVariant> &taskInfo);
-    void redactTask(const QMap<QString, QVariant> &taskInfo);
-    void deleteTask(const QString &uuid);
+    void syncTaskStatuses(const QJsonObject &notSyncedRecord);
+    void syncDepartments(const QJsonObject &notSyncedRecord);
+    void syncUsers(const QJsonObject &notSyncedRecord);
+    void syncTasks(const QJsonObject &notSyncedRecord);
 
-    void syncTaskStatuses(const QMap<QString, QVariant> &notSyncedRecord);
-    void syncDepartments(const QMap<QString, QVariant> &notSyncedRecord);
-    void syncUsers(const QMap<QString, QVariant> &notSyncedRecord);
-    void syncTasks(const QMap<QString, QVariant> &notSyncedRecord);
+    QString getSyncTime(const QJsonObject &notSyncedRecord);
+    QJsonArray getNotSyncedData(const QString &tableName);
 
-    QString getSyncTime(const QMap<QString, QVariant> &notSyncedRecord);
-    QMap<QString, QVariant> getAuthorizationInfo(const QString &username);
-    QList<QMap<QString, QVariant>> getAllTasksList(const int &page);
-    QList<QMap<QString, QVariant>> getUserTasksList(const QString &username, const int &page);
-    QList<QMap<QString, QVariant>> getDepartmentTasksList(const int &departmentId, const int &page);
-    QList<QMap<QString, QVariant>> getNotSyncedData(const QString &tableName);
+signals:
+    void tasksViewChanged();
 
 private:
     QSqlDatabase db;
