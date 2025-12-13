@@ -62,8 +62,8 @@ class DbManager:
             task_record["fk_department_id"]
         )
         if (self._execute(sql_request, record, commit_needed=True)):
-            return {"status":200, "description":"record was successfuly inserted"}
-        return {"status":400, "description":"error. check your request"}
+            return {"status":200, "description":"record was successfuly inserted", "uuid": task_record["uuid"]}
+        return {"status":400, "description":"error. check your request", "uuid": task_record["uuid"]}
 
     def update_task(self, task_record):
         query = """
@@ -88,12 +88,12 @@ class DbManager:
             task_record["uuid"]
         )
         if (self._execute(query, record, True)):
-            return {"status":200, "description":"record was successfuly updated"}
-        return {"status":400, "description":"error. check your request"}
+            return {"status":200, "description":"record was successfuly updated", "uuid": task_record["uuid"]}
+        return {"status":400, "description":"error. check your request", "uuid": task_record["uuid"]}
 
     def delete_task(self, uuid):
         if (self._execute("DELETE FROM tasks WHERE uuid=?", (uuid,), True)):
-            return {"status":200, "description":"record was succsessfuly deleted"} 
+            return {"status":200, "description":"record was succsessfuly deleted", "uuid": uuid} 
         return {"status":400, "description":"error. can't find the record with uuid:{uuid}"}
     
     def get_sync_time(self, table_name, uuid):
@@ -101,3 +101,15 @@ class DbManager:
         if(update_time):
             return update_time[0]["update_time"]
         return False
+
+    def update_record_sync(self, table_name, uuid):
+        query = f"UPDATE {table_name} SET sync_status=1 WHERE uuid=?"
+        if (self._execute(query, (uuid,), True)):
+            return {"status":200, "description":"record was succsessfuly synced"}
+        return {"status":400, "description":"error. can't find the record"}
+
+    def delete_record(self, table_name, uuid):
+        query = f"DELETE FROM {table_name} WHERE uuid=?"
+        if (self._execute(query, (uuid,), True)):
+            return {"status":200, "description":"record was succsessfuly deleted"}
+        return {"status":400, "description":"error. can't find the record"}
