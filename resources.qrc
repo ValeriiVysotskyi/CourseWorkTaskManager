@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>TaskCreateDlg.qml</file>
+        <file>MemeWatchingDlg.qml</file>
+        <file>MemeVideo.mp4</file>
     </qresource>
 </RCC>

@@ -182,13 +182,17 @@ Window {
         }
 
         TaskCreateDlg {
-            id:taskCreateDlg
+            id: taskCreateDlg
         }
+
+        MemeWatchingDlg {
+            id: memeWatchingDlg
+        }
+
         Column {
             spacing: 10
-            anchors.top: parent.top
+            anchors.fill: parent
             anchors.topMargin: 20
-            width: parent.width
 
             Row {
                 spacing: 5
@@ -253,6 +257,21 @@ Window {
                     onClicked: {
                         taskCreateDlg.createTaskStatus = 1
                         taskCreateDlg.open()
+                    }
+                }
+
+                Rectangle {
+                    width: 2
+                    height: 40
+                    color: "gray"
+                }
+
+                Button {
+                    text: "МЕМ >_0"
+                    font.pixelSize: 24
+                    font.bold: true
+                    onClicked: {
+                        memeWatchingDlg.open()
                     }
                 }
 

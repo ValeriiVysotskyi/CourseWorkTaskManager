@@ -31,6 +31,8 @@ qt_add_qml_module(appCourseWork
 qt_add_resources(appCourseWork "dlgWindows"
     PREFIX "/"
     FILES TaskCreateDlg.qml
+    FILES MemeWatchingDlg.qml
+    FILES MemeVideo.mp4
 )
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
