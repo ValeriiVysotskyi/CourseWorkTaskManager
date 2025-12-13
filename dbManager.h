@@ -32,12 +32,14 @@ public:
     Q_INVOKABLE QJsonArray getUserTasksList(const QString &username, const int &page);
     Q_INVOKABLE QJsonArray getDepartmentTasksList(const int &departmentId, const int &page);
 
-    void syncTaskStatuses(const QJsonObject &notSyncedRecord);
-    void syncDepartments(const QJsonObject &notSyncedRecord);
-    void syncUsers(const QJsonObject &notSyncedRecord);
-    void syncTasks(const QJsonObject &notSyncedRecord);
+    void successfullSyncDeleteTask(const QString &uuid);
+    void successfullSyncTask(const QString &uuid);
+    bool syncTaskStatuses(const QJsonObject &notSyncedRecord);
+    bool syncDepartments(const QJsonObject &notSyncedRecord);
+    bool syncUsers(const QJsonObject &notSyncedRecord);
+    bool syncTasks(const QJsonObject &notSyncedRecord);
 
-    QString getSyncTime(const QJsonObject &notSyncedRecord);
+    QString getSyncTime(const QString &tableName, const QString &uuid);
     QJsonArray getNotSyncedData(const QString &tableName);
 
 signals:

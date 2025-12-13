@@ -1,5 +1,4 @@
 #include "dbManager.h"
-#include "AuthorizationController.h"
 
 DbManager::DbManager(QObject *parent): QObject(parent) {
     db = QSqlDatabase::addDatabase("QSQLITE");
@@ -10,13 +9,39 @@ DbManager::DbManager(QObject *parent): QObject(parent) {
     }
     else {
         qDebug() << "БД завантаженно та готово до роботи";
-        // QSqlQuery query;
-        // query.exec("PRAGMA foreign_keys = ON");
+        QSqlQuery query;
+        query.exec("PRAGMA foreign_keys = ON");
     }
 }
 
 DbManager::~DbManager(){
     if (db.isOpen()) db.close();
+}
+
+void DbManager::successfullSyncDeleteTask(const QString &uuid){
+    QSqlQuery query;
+    query.prepare("DELETE FROM tasks WHERE uuid=?");
+    query.addBindValue(uuid);
+
+    if(!query.exec()) {
+        qDebug() << "[successfullSyncDeleteTask] Помилка видалення задачі після синхронізації:" << query.lastError().text();
+    }
+    else {
+        qDebug() << "[successfullSyncDeleteTask] Задачу повністю видалено після синхронізації. UUID: " << uuid;
+    }
+}
+
+void DbManager::successfullSyncTask(const QString &uuid){
+    QSqlQuery query;
+    query.prepare("UPDATE tasks SET sync_status=1 WHERE uuid=?");
+    query.addBindValue(uuid);
+
+    if(!query.exec()) {
+        qDebug() << "[successfullSyncTask] Помилка зміну статусу синхронізації:" << query.lastError().text();
+    }
+    else {
+        qDebug() << "[successfullSyncTask] Статус синхронізації успішно змінено на 1. UUID: " << uuid;
+    }
 }
 
 void DbManager::addTask(const QMap<QString, QVariant> &taskInfo){
@@ -132,7 +157,7 @@ void DbManager::deleteTask(const QString &uuid){
     }
 }
 
-void DbManager::syncTaskStatuses(const QJsonObject &notSyncedRecord){
+bool DbManager::syncTaskStatuses(const QJsonObject &notSyncedRecord){
     QSqlQuery query;
 
     switch (notSyncedRecord.value("last_operation").toInt()) {
@@ -142,9 +167,11 @@ void DbManager::syncTaskStatuses(const QJsonObject &notSyncedRecord){
 
         if(!query.exec()){
             qDebug() << "[syncTaskStatuses] Помилка видалення типу статусу задачі:" << query.lastError().text();
+            return 0;
         }
         else {
             qDebug() << "[syncTaskStatuses] Тип статусу задачі " << notSyncedRecord.value("name").toString() << " було успішно видалено";
+            return 1;
         }
         break;
 
@@ -159,10 +186,12 @@ void DbManager::syncTaskStatuses(const QJsonObject &notSyncedRecord){
 
         if(!query.exec()) {
             qDebug() << "[syncTaskStatuses] Помилка додавання нового статусу для задач:" << query.lastError().text();
+            return 0;
         }
 
         else {
             qDebug() << "[syncTaskStatuses] Додано новий тип статусу для задач:" << notSyncedRecord.value("name").toString();
+            return 1;
         }
         break;
 
@@ -180,19 +209,22 @@ void DbManager::syncTaskStatuses(const QJsonObject &notSyncedRecord){
 
         if(!query.exec()) {
             qDebug() << "[syncTaskStatuses] Помилка оновлення типу статусу задачі:" << query.lastError().text();
+            return 0;
         }
         else {
             qDebug() << "[syncTaskStatuses] Інформацію про тип статусу задачі оновлено uuid:" << notSyncedRecord["uuid"].toString();
+            return 1;
         }
         break;
 
     default:
         qDebug() << "[syncTaskStatuses] Невідома операція";
+        return 0;
         break;
     }
 }
 
-void DbManager::syncDepartments(const QJsonObject &notSyncedRecord){
+bool DbManager::syncDepartments(const QJsonObject &notSyncedRecord){
     QSqlQuery query;
 
     switch (notSyncedRecord.value("last_operation").toInt()) {
@@ -202,9 +234,11 @@ void DbManager::syncDepartments(const QJsonObject &notSyncedRecord){
 
         if(!query.exec()){
             qDebug() << "[syncDepartments] Помилка видалення департаменту:" << query.lastError().text();
+            return 0;
         }
         else {
             qDebug() << "[syncDepartments] Департамент " << notSyncedRecord.value("name").toString() << " було успішно видалено";
+            return 1;
         }
         break;
 
@@ -220,9 +254,11 @@ void DbManager::syncDepartments(const QJsonObject &notSyncedRecord){
 
         if(!query.exec()) {
             qDebug() << "[syncDepartments] Помилка додавання департаменту:" << query.lastError().text();
+            return 0;
         }
         else {
             qDebug() << "[syncDepartments] Додано новий департамент:" << notSyncedRecord.value("name").toString();
+            return 1;
         }
         break;
 
@@ -240,19 +276,22 @@ void DbManager::syncDepartments(const QJsonObject &notSyncedRecord){
 
         if(!query.exec()) {
             qDebug() << "[syncDepartments] Помилка оновлення типу департамента:" << query.lastError().text();
+            return 0;
         }
         else {
             qDebug() << "[syncDepartments] Інформацію про департамент оновлено. uuid:" << notSyncedRecord["uuid"].toString();
+            return 1;
         }
         break;
 
     default:
         qDebug() << "[syncDepartments] Невідома операція";
+        return 0;
         break;
     }
 }
 
-void DbManager::syncUsers(const QJsonObject &notSyncedRecord){
+bool DbManager::syncUsers(const QJsonObject &notSyncedRecord){
     QSqlQuery query;
 
     switch (notSyncedRecord.value("last_operation").toInt()) {
@@ -262,9 +301,11 @@ void DbManager::syncUsers(const QJsonObject &notSyncedRecord){
 
         if(!query.exec()){
             qDebug() << "[syncUsers] Помилка видалення користувача:" << query.lastError().text();
+            return 0;
         }
         else {
             qDebug() << "[syncUsers] Користувача " << notSyncedRecord.value("username").toString() << " було успішно видалено";
+            return 1;
         }
         break;
 
@@ -283,9 +324,11 @@ void DbManager::syncUsers(const QJsonObject &notSyncedRecord){
 
         if(!query.exec()) {
             qDebug() << "[syncUsers] Помилка додавання користувача:" << query.lastError().text();
+            return 0;
         }
         else {
             qDebug() << "[syncUsers] Додано нового користувача:" << notSyncedRecord.value("username").toString();
+            return 1;
         }
         break;
 
@@ -307,19 +350,22 @@ void DbManager::syncUsers(const QJsonObject &notSyncedRecord){
 
         if(!query.exec()) {
             qDebug() << "[syncUsers] Помилка оновлення інформації про користувача:" << query.lastError().text();
+            return 0;
         }
         else {
             qDebug() << "[syncUsers] Інформацію про користувача " << notSyncedRecord.value("username").toString() << " оновлено";
+            return 1;
         }
         break;
 
     default:
         qDebug() << "[syncUsers] Невідома операція";
+        return 0;
         break;
     }
 }
 
-void DbManager::syncTasks(const QJsonObject &notSyncedRecord){
+bool DbManager::syncTasks(const QJsonObject &notSyncedRecord){
     QSqlQuery query;
 
     switch (notSyncedRecord.value("last_operation").toInt()) {
@@ -329,9 +375,11 @@ void DbManager::syncTasks(const QJsonObject &notSyncedRecord){
 
         if(!query.exec()){
             qDebug() << "[syncTasks] Помилка видалення задачі:" << query.lastError().text();
+            return 0;
         }
         else {
             qDebug() << "[syncTasks] Задачу " << notSyncedRecord.value("uuid").toString() << " було успішно видалено";
+            return 1;
         }
         break;
 
@@ -353,9 +401,11 @@ void DbManager::syncTasks(const QJsonObject &notSyncedRecord){
 
         if(!query.exec()) {
             qDebug() << "[syncTasks] Помилка додавання задачі:" << query.lastError().text();
+            return 0;
         }
         else {
             qDebug() << "[syncTasks] Додано нову задачу:" << notSyncedRecord.value("uuid").toString();
+            return 1;
         }
         break;
 
@@ -379,25 +429,28 @@ void DbManager::syncTasks(const QJsonObject &notSyncedRecord){
 
         if(!query.exec()) {
             qDebug() << "[syncTasks] Помилка оновлення даних у задачі:" << query.lastError().text();
+            return 0;
         }
         else {
             qDebug() << "[syncTasks] Дані задачі " << notSyncedRecord.value("uuid").toString() << " оновлено";
+            return 1;
         }
         break;
 
     default:
         qDebug() << "[syncTasks] Невідома операція";
+        return 0;
         break;
     }
 }
 
-QString DbManager::getSyncTime(const QJsonObject &notSyncedRecord) {
+QString DbManager::getSyncTime(const QString &tableName, const QString &uuid) {
     QSqlQuery query;
     QString syncTimeResult;
-    QString sqlSyncDateReq = QString("SELECT update_time FROM %1 WHERE uuid = ?").arg(notSyncedRecord["table_name"].toString());
+    QString sqlSyncDateReq = QString("SELECT update_time FROM %1 WHERE uuid = ?").arg(tableName);
 
     query.prepare(sqlSyncDateReq);
-    query.addBindValue(notSyncedRecord.value("uuid").toString());
+    query.addBindValue(uuid);
 
     if (!query.exec()) {
         qDebug() << "[getSyncTime] Помилка виконання запиту:" << query.lastError().text();
@@ -407,8 +460,8 @@ QString DbManager::getSyncTime(const QJsonObject &notSyncedRecord) {
         qDebug() << "[getSyncTime] Успішно отримано час:" << syncTimeResult;
     }
     else {
-        qDebug() << "[getSyncTime] Запис з UUID:" << notSyncedRecord.value("uuid").toString()
-                 << " не знайдено в таблиці" << notSyncedRecord.value("table_name").toString();
+        qDebug() << "[getSyncTime] Запис з UUID:" << uuid
+                 << " не знайдено в таблиці:" << tableName;
     }
 
     return syncTimeResult;
