@@ -67,6 +67,7 @@ void DbManager::addTask(const QMap<QString, QVariant> &taskInfo){
     }
     else {
         qDebug() << "[addTask] Задачу " << taskUuid << " успішно створено";
+        emit tasksViewChanged();
     }
 }
 
@@ -154,6 +155,7 @@ void DbManager::deleteTask(const QString &uuid){
     }
     else {
         qDebug() << "[deleteTask] Статус задачі " << uuid << " успішно змінено на видалений";
+        emit tasksViewChanged();
     }
 }
 
